@@ -176,18 +176,19 @@ function renderCourts() {
                         ${side1PlayersHtml}
                     </div>
                     <div class="court-buttons">
-                        <button class="btn quick-add-btn ${court.side1.length >= 2 || queuePlayers.length === 0 ? 'disabled' : ''}"
+                        ${court.side1.length >= 2 ? '' : `
+                        <button class="btn quick-add-btn ${queuePlayers.length === 0 ? 'disabled' : ''}"
                                 data-court="${court.id}"
                                 data-side="1"
-                                ${court.side1.length >= 2 || queuePlayers.length === 0 ? 'disabled' : ''}>
+                                ${queuePlayers.length === 0 ? 'disabled' : ''}>
                             Очередь
                         </button>
-                        <button class="btn select-add-btn ${court.side1.length >= 2 ? 'disabled' : ''}"
+                        <button class="btn select-add-btn"
                                 data-court="${court.id}"
-                                data-side="1"
-                                ${court.side1.length >= 2 ? 'disabled' : ''}>
+                                data-side="1">
                             +
                         </button>
+                        `}
                     </div>
                 </div>
                 <div class="court-side side2">
@@ -195,18 +196,19 @@ function renderCourts() {
                         ${side2PlayersHtml}
                     </div>
                     <div class="court-buttons">
-                        <button class="btn quick-add-btn ${court.side2.length >= 2 || queuePlayers.length === 0 ? 'disabled' : ''}"
+                        ${court.side2.length >= 2 ? '' : `
+                        <button class="btn quick-add-btn ${queuePlayers.length === 0 ? 'disabled' : ''}"
                                 data-court="${court.id}"
                                 data-side="2"
-                                ${court.side2.length >= 2 || queuePlayers.length === 0 ? 'disabled' : ''}>
+                                ${queuePlayers.length === 0 ? 'disabled' : ''}>
                             Очередь
                         </button>
-                        <button class="btn select-add-btn ${court.side2.length >= 2 ? 'disabled' : ''}"
+                        <button class="btn select-add-btn"
                                 data-court="${court.id}"
-                                data-side="2"
-                                ${court.side2.length >= 2 ? 'disabled' : ''}>
+                                data-side="2">
                             +
                         </button>
+                        `}
                     </div>
                 </div>
             </div>
