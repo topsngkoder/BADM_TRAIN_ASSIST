@@ -808,15 +808,15 @@ function applyRegulationRules(court, winningSide = 1) {
             // Проверяем, сколько игр сыграла эта пара победителей
             const gamesPlayed = court.gamesPlayed[winnersKey] || 0;
 
-            // Добавляем проигравших в конец очереди
-            losers.forEach(player => {
-                queuePlayers.push(player);
-            });
-
             if (gamesPlayed >= 1) {
                 // Если эта пара победителей уже сыграла хотя бы одну игру,
                 // значит это их вторая победа, и они должны уйти в конец очереди
+                // Сначала добавляем победителей
                 winners.forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Затем добавляем проигравших
+                losers.forEach(player => {
                     queuePlayers.push(player);
                 });
 
@@ -835,6 +835,11 @@ function applyRegulationRules(court, winningSide = 1) {
                 // Увеличиваем счетчик игр для этой пары
                 court.gamesPlayed[winnersKey] = gamesPlayed + 1;
 
+                // Добавляем только проигравших в очередь
+                losers.forEach(player => {
+                    queuePlayers.push(player);
+                });
+
                 // Оставляем победителей на их стороне
                 if (winningSide === 1) {
                     court.side2 = [];
@@ -849,7 +854,7 @@ function applyRegulationRules(court, winningSide = 1) {
 
         case 'winner_stays_always':
             // Победитель остается всегда
-            // Добавляем проигравших в конец очереди
+            // Добавляем только проигравших в очередь
             losers.forEach(player => {
                 queuePlayers.push(player);
             });
@@ -883,7 +888,7 @@ function applyRegulationRules(court, winningSide = 1) {
                 // Сбрасываем флаг
                 court.winnerStayed = false;
             } else {
-                // Добавляем проигравших в конец очереди
+                // Добавляем только проигравших в очередь
                 losers.forEach(player => {
                     queuePlayers.push(player);
                 });
