@@ -19,6 +19,12 @@
     margin: 5px 0;
 }
 
+.training-info-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+}
+
 .courts-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

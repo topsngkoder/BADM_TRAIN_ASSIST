@@ -119,11 +119,9 @@ function displayTrainingInfo() {
         month: '2-digit',
         year: 'numeric'
     });
-    
+
     trainingInfoElement.innerHTML = `
-        <p><strong>Место:</strong> ${currentTraining.location}</p>
-        <p><strong>Дата и время:</strong> ${formattedDate}, ${currentTraining.time}</p>
-        <p><strong>Количество кортов:</strong> ${currentTraining.courts}</p>
+        <p class="training-info-text">${currentTraining.location}, ${formattedDate}, ${currentTraining.time}</p>
     `;
 }
 
