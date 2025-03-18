@@ -148,6 +148,7 @@
 
 .court-actions {
     display: flex;
+    align-items: center;
     justify-content: flex-start;
     margin-top: 15px;
 }
@@ -161,14 +162,28 @@
     background-color: #45a049;
 }
 
+.game-buttons {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+}
+
 .finish-game-btn {
     background-color: #2196F3;
     color: white;
-    margin-left: 10px;
 }
 
 .finish-game-btn:hover {
     background-color: #0b7dda;
+}
+
+.cancel-game-btn {
+    background-color: #e0e0e0;
+    color: #666;
+}
+
+.cancel-game-btn:hover {
+    background-color: #d0d0d0;
 }
 
 .game-timer {

@@ -262,7 +262,10 @@ function renderCourts() {
             <div class="court-actions">
                 ${activeGames[court.id] ?
                     `<div class="game-timer" id="timer-${court.id}">${formatTime(activeGames[court.id].elapsedTime)}</div>
-                    <button class="btn finish-game-btn" data-court="${court.id}">Игра завершена</button>` :
+                    <div class="game-buttons">
+                        <button class="btn finish-game-btn" data-court="${court.id}">Игра завершена</button>
+                        <button class="btn cancel-game-btn" data-court="${court.id}">Отмена</button>
+                    </div>` :
                     `<button class="btn start-game-btn" data-court="${court.id}">Начать</button>`
                 }
             </div>
@@ -299,6 +302,13 @@ function renderCourts() {
         btn.addEventListener('click', function() {
             const courtId = parseInt(this.getAttribute('data-court'));
             finishGame(courtId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-game-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const courtId = parseInt(this.getAttribute('data-court'));
+            cancelGame(courtId);
         });
     });
 
@@ -554,6 +564,24 @@ function startGame(courtId) {
 
 // Завершение игры на корте
 function finishGame(courtId) {
+    // Проверяем, что игра активна
+    if (!activeGames[courtId]) return;
+
+    // Останавливаем таймер
+    clearInterval(activeGames[courtId].timerId);
+
+    // Удаляем активную игру
+    delete activeGames[courtId];
+
+    // Обновляем отображение
+    renderCourts();
+
+    // Сохраняем состояние тренировки
+    saveTrainingState();
+}
+
+// Отмена игры на корте (возврат к состоянию до начала игры)
+function cancelGame(courtId) {
     // Проверяем, что игра активна
     if (!activeGames[courtId]) return;
 
