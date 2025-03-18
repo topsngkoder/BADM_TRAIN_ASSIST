@@ -92,35 +92,47 @@ function displayTrainingInfo() {
 
 // Инициализация кортов
 function initCourts() {
-    courtsData = [];
-    
-    for (let i = 0; i < currentTraining.courts; i++) {
-        courtsData.push({
-            id: i,
-            name: `Корт ${i + 1}`,
-            side1: [],
-            side2: []
-        });
+    // Если в тренировке уже есть сохраненные данные о кортах, используем их
+    if (currentTraining.courtsData && Array.isArray(currentTraining.courtsData)) {
+        courtsData = currentTraining.courtsData;
+    } else {
+        // Иначе создаем новые корты
+        courtsData = [];
+
+        for (let i = 0; i < currentTraining.courts; i++) {
+            courtsData.push({
+                id: i,
+                name: `Корт ${i + 1}`,
+                side1: [],
+                side2: []
+            });
+        }
     }
 }
 
 // Инициализация очереди игроков
 function initQueue() {
-    queuePlayers = [];
-    
-    if (currentTraining.playerIds && currentTraining.playerIds.length > 0) {
-        currentTraining.playerIds.forEach(playerId => {
-            const player = players.find((p, idx) => idx === playerId);
-            if (player) {
-                queuePlayers.push({
-                    id: playerId,
-                    firstName: player.firstName,
-                    lastName: player.lastName,
-                    photo: player.photo,
-                    rating: player.rating
-                });
-            }
-        });
+    // Если в тренировке уже есть сохраненная очередь, используем ее
+    if (currentTraining.queuePlayers && Array.isArray(currentTraining.queuePlayers)) {
+        queuePlayers = currentTraining.queuePlayers;
+    } else {
+        // Иначе создаем очередь из всех игроков тренировки
+        queuePlayers = [];
+
+        if (currentTraining.playerIds && currentTraining.playerIds.length > 0) {
+            currentTraining.playerIds.forEach(playerId => {
+                const player = players.find((p, idx) => idx === playerId);
+                if (player) {
+                    queuePlayers.push({
+                        id: playerId,
+                        firstName: player.firstName,
+                        lastName: player.lastName,
+                        photo: player.photo,
+                        rating: player.rating
+                    });
+                }
+            });
+        }
     }
 }
 
@@ -304,6 +316,9 @@ function addFirstPlayerFromQueue(courtId, side) {
         // Обновляем отображение
         renderCourts();
         renderQueue();
+
+        // Сохраняем состояние тренировки
+        saveTrainingState();
     }
 }
 
@@ -366,6 +381,9 @@ function showPlayerSelectionDialog(courtId, side) {
                 // Обновляем отображение
                 renderCourts();
                 renderQueue();
+
+                // Сохраняем состояние тренировки
+                saveTrainingState();
 
                 // Закрываем модальное окно
                 document.body.removeChild(modal);
@@ -444,6 +462,9 @@ function removePlayerFromCourt(courtId, side, playerIndex) {
     // Обновляем отображение
     renderCourts();
     renderQueue();
+
+    // Сохраняем состояние тренировки
+    saveTrainingState();
 }
 
 // Завершение игры на корте
@@ -451,8 +472,24 @@ function finishGame(courtId) {
     alert('Функционал завершения игры будет добавлен в следующей версии');
 }
 
+// Функция для сохранения состояния тренировки
+function saveTrainingState() {
+    // Сохраняем текущее состояние кортов и очереди в объект тренировки
+    currentTraining.courtsData = courtsData;
+    currentTraining.queuePlayers = queuePlayers;
+
+    // Обновляем тренировку в массиве тренировок
+    trainings[trainingId] = currentTraining;
+
+    // Сохраняем обновленный массив тренировок в localStorage
+    localStorage.setItem('badmintonTrainings', JSON.stringify(trainings));
+}
+
 // Обработчик для кнопки возврата к списку тренировок
 backToMainBtn.addEventListener('click', function() {
+    // Сохраняем состояние тренировки перед выходом
+    saveTrainingState();
+
     // Перенаправляем на главную страницу с параметром для открытия вкладки тренировок
     window.location.href = 'index.html?tab=trainings';
 });
@@ -460,4 +497,9 @@ backToMainBtn.addEventListener('click', function() {
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     initTrainingSession();
+});
+
+// Сохраняем состояние тренировки при закрытии страницы или перезагрузке
+window.addEventListener('beforeunload', function() {
+    saveTrainingState();
 });
