@@ -19,33 +19,88 @@ const playersQueue = document.getElementById('players-queue');
 const backToMainBtn = document.getElementById('back-to-main');
 const gameRegulationSelect = document.getElementById('game-regulation');
 
-// Создаем дефолтное изображение
+// Функция для создания аватара с инициалами
+function createInitialsAvatar(firstName, lastName) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+
+    // Создаем круглый фон
+    ctx.fillStyle = getRandomColor(firstName + lastName);
+    ctx.beginPath();
+    ctx.arc(100, 100, 100, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Получаем инициалы
+    const initials = getInitials(firstName, lastName);
+
+    // Рисуем инициалы
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 80px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, 100, 100);
+
+    // Возвращаем как data URL
+    return canvas.toDataURL('image/png');
+}
+
+// Функция для получения инициалов
+function getInitials(firstName, lastName) {
+    const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+    const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+    return firstInitial + lastInitial;
+}
+
+// Функция для генерации случайного цвета на основе строки
+function getRandomColor(str) {
+    // Генерируем хеш строки
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    // Преобразуем хеш в цвет
+    const colors = [
+        '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e',
+        '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50',
+        '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12',
+        '#d35400', '#c0392b', '#7f8c8d'
+    ];
+
+    // Используем хеш для выбора цвета из массива
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+}
+
+// Создаем дефолтное изображение для случаев, когда нет имени и фамилии
 function createDefaultAvatar() {
     const canvas = document.createElement('canvas');
     canvas.width = 200;
     canvas.height = 200;
     const ctx = canvas.getContext('2d');
-    
+
     // Создаем круглый фон
     ctx.fillStyle = '#e0e0e0';
     ctx.beginPath();
     ctx.arc(100, 100, 100, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Рисуем силуэт
     ctx.fillStyle = '#a0a0a0';
     ctx.beginPath();
     ctx.arc(100, 80, 40, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Рисуем тело
     ctx.beginPath();
     ctx.arc(100, 200, 60, Math.PI, 0, true);
     ctx.fill();
-    
+
     // Соединяем голову и тело
     ctx.fillRect(60, 80, 80, 80);
-    
+
     // Возвращаем как data URL
     return canvas.toDataURL('image/png');
 }
@@ -193,7 +248,7 @@ function renderCourts() {
         let side1PlayersHtml = '';
         if (court.side1.length > 0) {
             court.side1.forEach(player => {
-                const photoSrc = player.photo || defaultAvatarDataURL;
+                const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
                 side1PlayersHtml += `
                     <div class="court-player">
                         <img src="${photoSrc}" alt="${player.firstName} ${player.lastName}" class="court-player-photo">
@@ -210,7 +265,7 @@ function renderCourts() {
         let side2PlayersHtml = '';
         if (court.side2.length > 0) {
             court.side2.forEach(player => {
-                const photoSrc = player.photo || defaultAvatarDataURL;
+                const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
                 side2PlayersHtml += `
                     <div class="court-player">
                         <img src="${photoSrc}" alt="${player.firstName} ${player.lastName}" class="court-player-photo">
@@ -340,14 +395,14 @@ function renderQueue() {
     queuePlayers.forEach(player => {
         const playerElement = document.createElement('div');
         playerElement.classList.add('queue-player');
-        
-        const photoSrc = player.photo || defaultAvatarDataURL;
-        
+
+        const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
+
         playerElement.innerHTML = `
             <img src="${photoSrc}" alt="${player.firstName} ${player.lastName}" class="queue-player-photo">
             <span class="queue-player-name">${player.firstName} ${player.lastName}</span>
         `;
-        
+
         playersQueue.appendChild(playerElement);
     });
 }
@@ -428,7 +483,7 @@ function showPlayerSelectionDialog(courtId, side) {
         const playerItem = document.createElement('div');
         playerItem.classList.add('player-selection-item');
 
-        const photoSrc = player.photo || defaultAvatarDataURL;
+        const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
 
         playerItem.innerHTML = `
             <img src="${photoSrc}" alt="${player.firstName} ${player.lastName}" class="player-selection-photo">
