@@ -281,9 +281,14 @@ function renderCourts() {
             });
         }
         
+        // Проверяем, играет ли пара вторую игру
+        const secondGameIndicator = court.winnerStayed ?
+            '<div class="second-game-indicator">2-я игра</div>' : '';
+
         courtCard.innerHTML = `
             <div class="court-header">
                 <div class="court-title">${court.name}</div>
+                ${secondGameIndicator}
             </div>
             <div class="court-sides">
                 <div class="court-side side1">
@@ -774,18 +779,38 @@ function applyRegulationRules(court, winningSide = 1) {
 
     switch (regulation) {
         case 'two_games_out':
-            // Игроки играют два раза и выходят
-            // Сначала добавляем победителей в конец очереди
-            winners.forEach(player => {
-                queuePlayers.push(player);
-            });
-            // Затем добавляем проигравших в конец очереди
-            losers.forEach(player => {
-                queuePlayers.push(player);
-            });
-            // Очищаем корт
-            court.side1 = [];
-            court.side2 = [];
+            // Два раза и вышел: победитель остается на корте еще одну игру
+            // Если у корта есть свойство winnerStayed и оно true,
+            // значит победитель уже оставался один раз
+            if (court.winnerStayed) {
+                // Сначала добавляем победителей в конец очереди
+                winners.forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Затем добавляем проигравших в конец очереди
+                losers.forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Очищаем корт
+                court.side1 = [];
+                court.side2 = [];
+                // Сбрасываем флаг
+                court.winnerStayed = false;
+            } else {
+                // Добавляем проигравших в конец очереди
+                losers.forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Очищаем сторону проигравших и перемещаем победителей на сторону 1
+                if (winningSide === 1) {
+                    court.side2 = [];
+                } else {
+                    court.side1 = winners;
+                    court.side2 = [];
+                }
+                // Устанавливаем флаг, что победитель остался
+                court.winnerStayed = true;
+            }
             break;
 
         case 'winner_stays_always':
