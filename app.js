@@ -241,7 +241,7 @@ function renderTrainings() {
                 </div>
                 <button class="btn start-training-btn" data-index="${index}">Войти</button>
             </div>
-            <div class="training-players-title">Участники:</div>
+            <div class="training-players-title">Участники (${training.playerIds ? training.playerIds.length : 0}):</div>
             <div class="training-players">
                 ${playersHtml}
             </div>
