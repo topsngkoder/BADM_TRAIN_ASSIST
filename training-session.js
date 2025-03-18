@@ -635,6 +635,111 @@ function finishGame(courtId) {
     // Проверяем, что игра активна
     if (!activeGames[courtId]) return;
 
+    // Получаем корт
+    const court = courtsData.find(c => c.id === courtId);
+    if (!court) return;
+
+    // Проверяем, что на корте есть игроки
+    if (court.side1.length === 0 || court.side2.length === 0) {
+        alert('На корте должны быть игроки с обеих сторон');
+        return;
+    }
+
+    // Показываем модальное окно выбора победителя
+    showWinnerSelectionDialog(courtId);
+}
+
+// Показать диалог выбора победителя
+function showWinnerSelectionDialog(courtId) {
+    // Получаем корт
+    const court = courtsData.find(c => c.id === courtId);
+    if (!court) return;
+
+    // Создаем модальное окно
+    const modal = document.createElement('div');
+    modal.classList.add('player-selection-modal');
+
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('player-selection-modal-content');
+
+    // Заголовок модального окна
+    const modalHeader = document.createElement('div');
+    modalHeader.classList.add('player-selection-modal-header');
+    modalHeader.innerHTML = `
+        <h3>Кто победил?</h3>
+        <span class="close-modal">&times;</span>
+    `;
+
+    // Содержимое модального окна
+    const modalBody = document.createElement('div');
+    modalBody.classList.add('winner-selection-body');
+
+    // Формируем названия команд (фамилии через косую черту)
+    const side1Name = court.side1.map(player => player.lastName).join('/');
+    const side2Name = court.side2.map(player => player.lastName).join('/');
+
+    modalBody.innerHTML = `
+        <div class="winner-option" data-court="${courtId}" data-winner="1">
+            <div class="winner-team">${side1Name}</div>
+        </div>
+        <div class="winner-option" data-court="${courtId}" data-winner="2">
+            <div class="winner-team">${side2Name}</div>
+        </div>
+        <div class="winner-buttons">
+            <button class="btn cancel-winner-btn">Отмена</button>
+        </div>
+    `;
+
+    // Собираем модальное окно
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(modalBody);
+    modal.appendChild(modalContent);
+
+    // Добавляем обработчики событий
+
+    // Закрытие модального окна при клике на крестик
+    const closeBtn = modalHeader.querySelector('.close-modal');
+    closeBtn.addEventListener('click', function() {
+        document.body.removeChild(modal);
+    });
+
+    // Закрытие модального окна при клике вне его
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+
+    // Обработчик для кнопки отмены
+    const cancelBtn = modalBody.querySelector('.cancel-winner-btn');
+    cancelBtn.addEventListener('click', function() {
+        document.body.removeChild(modal);
+    });
+
+    // Обработчики для выбора победителя
+    const winnerOptions = modalBody.querySelectorAll('.winner-option');
+    winnerOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const courtId = parseInt(this.getAttribute('data-court'));
+            const winningSide = parseInt(this.getAttribute('data-winner'));
+
+            // Завершаем игру с выбранным победителем
+            completeGameWithWinner(courtId, winningSide);
+
+            // Закрываем модальное окно
+            document.body.removeChild(modal);
+        });
+    });
+
+    // Добавляем модальное окно в DOM
+    document.body.appendChild(modal);
+}
+
+// Завершение игры с выбранным победителем
+function completeGameWithWinner(courtId, winningSide) {
+    // Проверяем, что игра активна
+    if (!activeGames[courtId]) return;
+
     // Останавливаем таймер
     clearInterval(activeGames[courtId].timerId);
 
@@ -645,8 +750,8 @@ function finishGame(courtId) {
     const court = courtsData.find(c => c.id === courtId);
     if (!court) return;
 
-    // Применяем правила регламента
-    applyRegulationRules(court);
+    // Применяем правила регламента с учетом победителя
+    applyRegulationRules(court, winningSide);
 
     // Обновляем отображение
     renderCourts();
@@ -657,17 +762,25 @@ function finishGame(courtId) {
 }
 
 // Применение правил регламента после завершения игры
-function applyRegulationRules(court) {
+function applyRegulationRules(court, winningSide = 1) {
     const regulation = currentTraining.gameRegulation;
 
     // Если нет игроков на корте, нечего делать
     if (court.side1.length === 0 && court.side2.length === 0) return;
 
+    // Определяем победителей и проигравших
+    const winners = winningSide === 1 ? court.side1 : court.side2;
+    const losers = winningSide === 1 ? court.side2 : court.side1;
+
     switch (regulation) {
         case 'two_games_out':
             // Игроки играют два раза и выходят
-            // Добавляем всех игроков в конец очереди
-            [...court.side1, ...court.side2].forEach(player => {
+            // Сначала добавляем победителей в конец очереди
+            winners.forEach(player => {
+                queuePlayers.push(player);
+            });
+            // Затем добавляем проигравших в конец очереди
+            losers.forEach(player => {
                 queuePlayers.push(player);
             });
             // Очищаем корт
@@ -677,23 +790,32 @@ function applyRegulationRules(court) {
 
         case 'winner_stays_always':
             // Победитель остается всегда
-            // Предполагаем, что сторона 1 - победитель
-            // Добавляем игроков стороны 2 в конец очереди
-            court.side2.forEach(player => {
+            // Добавляем проигравших в конец очереди
+            losers.forEach(player => {
                 queuePlayers.push(player);
             });
-            // Очищаем сторону 2
-            court.side2 = [];
+            // Очищаем сторону проигравших
+            if (winningSide === 1) {
+                court.side2 = [];
+            } else {
+                court.side1 = [];
+                // Перемещаем победителей на сторону 1
+                court.side1 = winners;
+                court.side2 = [];
+            }
             break;
 
         case 'winner_stays_once':
             // Победитель остается один раз
-            // Предполагаем, что сторона 1 - победитель
             // Если у корта есть свойство winnerStayed и оно true,
             // значит победитель уже оставался один раз
             if (court.winnerStayed) {
-                // Добавляем всех игроков в конец очереди
-                [...court.side1, ...court.side2].forEach(player => {
+                // Сначала добавляем победителей в конец очереди
+                winners.forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Затем добавляем проигравших в конец очереди
+                losers.forEach(player => {
                     queuePlayers.push(player);
                 });
                 // Очищаем корт
@@ -702,12 +824,17 @@ function applyRegulationRules(court) {
                 // Сбрасываем флаг
                 court.winnerStayed = false;
             } else {
-                // Добавляем игроков стороны 2 в конец очереди
-                court.side2.forEach(player => {
+                // Добавляем проигравших в конец очереди
+                losers.forEach(player => {
                     queuePlayers.push(player);
                 });
-                // Очищаем сторону 2
-                court.side2 = [];
+                // Очищаем сторону проигравших и перемещаем победителей на сторону 1
+                if (winningSide === 1) {
+                    court.side2 = [];
+                } else {
+                    court.side1 = winners;
+                    court.side2 = [];
+                }
                 // Устанавливаем флаг, что победитель остался
                 court.winnerStayed = true;
             }
@@ -715,8 +842,12 @@ function applyRegulationRules(court) {
 
         case 'one_game':
             // Играем один раз
-            // Добавляем всех игроков в конец очереди
-            [...court.side1, ...court.side2].forEach(player => {
+            // Сначала добавляем победителей в конец очереди
+            winners.forEach(player => {
+                queuePlayers.push(player);
+            });
+            // Затем добавляем проигравших в конец очереди
+            losers.forEach(player => {
                 queuePlayers.push(player);
             });
             // Очищаем корт

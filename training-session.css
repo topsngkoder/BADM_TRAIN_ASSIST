@@ -422,6 +422,49 @@ h1 {
     font-size: 16px;
 }
 
+/* Модальное окно выбора победителя */
+.winner-selection-body {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.winner-option {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.winner-option:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.winner-team {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.winner-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.cancel-winner-btn {
+    background-color: #e0e0e0;
+    color: #666;
+}
+
+.cancel-winner-btn:hover {
+    background-color: #d0d0d0;
+}
+
 /* Адаптивность для мобильных устройств */
 @media (max-width: 600px) {
     .courts-container {
