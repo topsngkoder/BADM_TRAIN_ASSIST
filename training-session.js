@@ -211,6 +211,11 @@ function initCourts() {
             if (court.previousWinnersSide === undefined && court.winnerStayed) {
                 court.previousWinnersSide = 1;
             }
+
+            // Если свойство winnerChanges не определено, устанавливаем его в 0
+            if (court.winnerChanges === undefined) {
+                court.winnerChanges = 0;
+            }
         });
     } else {
         // Иначе создаем новые корты
@@ -223,7 +228,8 @@ function initCourts() {
                 side1: [],
                 side2: [],
                 winnerStayed: false,
-                previousWinnersSide: null
+                previousWinnersSide: null,
+                winnerChanges: 0
             });
         }
     }
@@ -819,8 +825,11 @@ function applyRegulationRules(court, winningSide = 1) {
                     // Сбрасываем флаги
                     court.winnerStayed = false;
                     court.previousWinnersSide = null;
+                    // Сбрасываем счетчик смен победителей
+                    court.winnerChanges = 0;
                 } else {
                     // Если победили новые игроки (предыдущие победители проиграли)
+
                     // Добавляем проигравших (предыдущих победителей) в конец очереди
                     losers.forEach(player => {
                         queuePlayers.push(player);
@@ -838,6 +847,8 @@ function applyRegulationRules(court, winningSide = 1) {
                     court.winnerStayed = true;
                     // Запоминаем, на какой стороне находятся новые победители
                     court.previousWinnersSide = winningSide;
+                    // Сбрасываем счетчик смен победителей, так как это новая пара
+                    court.winnerChanges = 0;
                 }
             } else {
                 // Это первая игра для обеих пар
@@ -858,6 +869,8 @@ function applyRegulationRules(court, winningSide = 1) {
                 court.winnerStayed = true;
                 // Запоминаем, на какой стороне находятся победители
                 court.previousWinnersSide = winningSide;
+                // Сбрасываем счетчик смен победителей
+                court.winnerChanges = 0;
             }
             break;
 
