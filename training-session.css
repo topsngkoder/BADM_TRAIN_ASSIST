@@ -123,17 +123,17 @@
 
 .court-actions {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     margin-top: 15px;
 }
 
-.finish-game-btn {
-    background-color: #FF9800;
+.start-game-btn {
+    background-color: #4CAF50;
     color: white;
 }
 
-.finish-game-btn:hover {
-    background-color: #e68a00;
+.start-game-btn:hover {
+    background-color: #45a049;
 }
 
 .queue-section {

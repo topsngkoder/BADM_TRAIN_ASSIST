@@ -225,7 +225,7 @@ function renderCourts() {
                 </div>
             </div>
             <div class="court-actions">
-                <button class="btn finish-game-btn" data-court="${court.id}">Игра завершена</button>
+                <button class="btn start-game-btn" data-court="${court.id}">Начать</button>
             </div>
         `;
         
@@ -249,10 +249,10 @@ function renderCourts() {
         });
     });
     
-    document.querySelectorAll('.finish-game-btn').forEach(btn => {
+    document.querySelectorAll('.start-game-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const courtId = parseInt(this.getAttribute('data-court'));
-            finishGame(courtId);
+            startGame(courtId);
         });
     });
 
@@ -467,9 +467,9 @@ function removePlayerFromCourt(courtId, side, playerIndex) {
     saveTrainingState();
 }
 
-// Завершение игры на корте
-function finishGame(courtId) {
-    alert('Функционал завершения игры будет добавлен в следующей версии');
+// Начало игры на корте
+function startGame(courtId) {
+    alert('Функционал начала игры будет добавлен в следующей версии');
 }
 
 // Функция для сохранения состояния тренировки
