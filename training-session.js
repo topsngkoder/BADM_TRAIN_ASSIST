@@ -17,6 +17,7 @@ const trainingInfoElement = document.getElementById('training-info');
 const courtsContainer = document.getElementById('courts-container');
 const playersQueue = document.getElementById('players-queue');
 const backToMainBtn = document.getElementById('back-to-main');
+const gameRegulationSelect = document.getElementById('game-regulation');
 
 // Создаем дефолтное изображение
 function createDefaultAvatar() {
@@ -71,6 +72,15 @@ function initTrainingSession() {
     
     // Отображаем информацию о тренировке
     displayTrainingInfo();
+
+    // Устанавливаем значение регламента из сохраненных данных или по умолчанию
+    if (currentTraining.gameRegulation) {
+        gameRegulationSelect.value = currentTraining.gameRegulation;
+    } else {
+        // По умолчанию "Два раза и вышел"
+        currentTraining.gameRegulation = 'two_games_out';
+        gameRegulationSelect.value = 'two_games_out';
+    }
     
     // Инициализируем корты
     initCourts();
@@ -573,11 +583,89 @@ function finishGame(courtId) {
     // Удаляем активную игру
     delete activeGames[courtId];
 
+    // Получаем корт
+    const court = courtsData.find(c => c.id === courtId);
+    if (!court) return;
+
+    // Применяем правила регламента
+    applyRegulationRules(court);
+
     // Обновляем отображение
     renderCourts();
+    renderQueue();
 
     // Сохраняем состояние тренировки
     saveTrainingState();
+}
+
+// Применение правил регламента после завершения игры
+function applyRegulationRules(court) {
+    const regulation = currentTraining.gameRegulation;
+
+    // Если нет игроков на корте, нечего делать
+    if (court.side1.length === 0 && court.side2.length === 0) return;
+
+    switch (regulation) {
+        case 'two_games_out':
+            // Игроки играют два раза и выходят
+            // Добавляем всех игроков в конец очереди
+            [...court.side1, ...court.side2].forEach(player => {
+                queuePlayers.push(player);
+            });
+            // Очищаем корт
+            court.side1 = [];
+            court.side2 = [];
+            break;
+
+        case 'winner_stays_always':
+            // Победитель остается всегда
+            // Предполагаем, что сторона 1 - победитель
+            // Добавляем игроков стороны 2 в конец очереди
+            court.side2.forEach(player => {
+                queuePlayers.push(player);
+            });
+            // Очищаем сторону 2
+            court.side2 = [];
+            break;
+
+        case 'winner_stays_once':
+            // Победитель остается один раз
+            // Предполагаем, что сторона 1 - победитель
+            // Если у корта есть свойство winnerStayed и оно true,
+            // значит победитель уже оставался один раз
+            if (court.winnerStayed) {
+                // Добавляем всех игроков в конец очереди
+                [...court.side1, ...court.side2].forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Очищаем корт
+                court.side1 = [];
+                court.side2 = [];
+                // Сбрасываем флаг
+                court.winnerStayed = false;
+            } else {
+                // Добавляем игроков стороны 2 в конец очереди
+                court.side2.forEach(player => {
+                    queuePlayers.push(player);
+                });
+                // Очищаем сторону 2
+                court.side2 = [];
+                // Устанавливаем флаг, что победитель остался
+                court.winnerStayed = true;
+            }
+            break;
+
+        case 'one_game':
+            // Играем один раз
+            // Добавляем всех игроков в конец очереди
+            [...court.side1, ...court.side2].forEach(player => {
+                queuePlayers.push(player);
+            });
+            // Очищаем корт
+            court.side1 = [];
+            court.side2 = [];
+            break;
+    }
 }
 
 // Отмена игры на корте (возврат к состоянию до начала игры)
@@ -628,6 +716,15 @@ backToMainBtn.addEventListener('click', function() {
 
     // Перенаправляем на главную страницу с параметром для открытия вкладки тренировок
     window.location.href = 'index.html?tab=trainings';
+});
+
+// Обработчик изменения регламента
+gameRegulationSelect.addEventListener('change', function() {
+    // Сохраняем выбранный регламент в объект тренировки
+    currentTraining.gameRegulation = this.value;
+
+    // Сохраняем состояние тренировки
+    saveTrainingState();
 });
 
 // Инициализация при загрузке страницы
