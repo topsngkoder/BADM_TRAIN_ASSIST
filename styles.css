@@ -124,6 +124,12 @@ h1, h2 {
     justify-content: center;
 }
 
+.transparent-btn {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
 .sort-btn {
     background-color: #607D8B;
     color: white;

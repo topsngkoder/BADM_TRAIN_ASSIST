@@ -226,8 +226,8 @@ function renderTrainings() {
             <div class="training-header">
                 <div class="training-date-time">${formattedDate}, ${formattedTime}</div>
                 <div class="training-actions">
-                    <button class="btn icon-btn edit-btn" data-index="${index}" title="Редактировать">✏️</button>
-                    <button class="btn icon-btn delete-btn" data-index="${index}" title="Удалить">🗑️</button>
+                    <button class="btn icon-btn transparent-btn" data-index="${index}" title="Редактировать">✏️</button>
+                    <button class="btn icon-btn transparent-btn" data-index="${index}" title="Удалить">🗑️</button>
                 </div>
             </div>
             <div class="training-info">
@@ -251,17 +251,14 @@ function renderTrainings() {
     });
 
     // Добавляем обработчики для кнопок
-    document.querySelectorAll('.trainings-list .delete-btn').forEach(btn => {
+    document.querySelectorAll('.trainings-list .training-actions button').forEach(btn => {
         btn.addEventListener('click', function() {
             const index = parseInt(this.getAttribute('data-index'));
-            deleteTraining(index);
-        });
-    });
-
-    document.querySelectorAll('.trainings-list .edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.getAttribute('data-index'));
-            openEditTrainingModal(index);
+            if (this.textContent.includes('✏️')) {
+                openEditTrainingModal(index);
+            } else if (this.textContent.includes('🗑️')) {
+                deleteTraining(index);
+            }
         });
     });
 
