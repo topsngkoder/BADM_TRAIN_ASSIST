@@ -33,7 +33,62 @@ const trainingPlayersSelection = document.getElementById('training-players-selec
 // Переменная для хранения информации о текущей тренировке при создании игрока
 let currentTrainingData = null;
 
-// Функция для создания дефолтного аватара
+// Функция для создания аватара с инициалами
+function createInitialsAvatar(firstName, lastName) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+
+    // Создаем круглый фон
+    ctx.fillStyle = getRandomColor(firstName + lastName);
+    ctx.beginPath();
+    ctx.arc(100, 100, 100, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Получаем инициалы
+    const initials = getInitials(firstName, lastName);
+
+    // Рисуем инициалы
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 80px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, 100, 100);
+
+    // Возвращаем как data URL
+    return canvas.toDataURL('image/png');
+}
+
+// Функция для получения инициалов
+function getInitials(firstName, lastName) {
+    const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+    const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+    return firstInitial + lastInitial;
+}
+
+// Функция для генерации случайного цвета на основе строки
+function getRandomColor(str) {
+    // Генерируем хеш строки
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    // Преобразуем хеш в цвет
+    const colors = [
+        '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e',
+        '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50',
+        '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12',
+        '#d35400', '#c0392b', '#7f8c8d'
+    ];
+
+    // Используем хеш для выбора цвета из массива
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+}
+
+// Функция для создания дефолтного аватара для случаев, когда нет имени и фамилии
 function createDefaultAvatar() {
     const canvas = document.createElement('canvas');
     canvas.width = 200;
@@ -96,7 +151,7 @@ function renderPlayers() {
         const playerCard = document.createElement('div');
         playerCard.classList.add('player-card');
 
-        const photoSrc = player.photo || defaultAvatarDataURL;
+        const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
 
         playerCard.innerHTML = `
             <div class="player-card-content">
@@ -209,7 +264,7 @@ function renderTrainings() {
             training.playerIds.forEach(playerId => {
                 const player = players.find((p, idx) => idx === playerId);
                 if (player) {
-                    const photoSrc = player.photo || defaultAvatarDataURL;
+                    const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
                     playersHtml += `
                         <div class="training-player-item">
                             <img src="${photoSrc}" alt="${player.firstName} ${player.lastName}" class="training-player-photo">
@@ -349,7 +404,7 @@ function fillTrainingPlayersSelection(selectedPlayerIds = []) {
         const playerItem = document.createElement('div');
         playerItem.classList.add('player-checkbox-item');
 
-        const photoSrc = player.photo || defaultAvatarDataURL;
+        const photoSrc = player.photo || createInitialsAvatar(player.firstName, player.lastName);
         const isChecked = selectedPlayerIds.includes(index);
 
         playerItem.innerHTML = `
