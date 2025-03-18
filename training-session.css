@@ -29,6 +29,7 @@ h1 {
     color: #2196F3;
     padding: 5px;
     transition: transform 0.2s;
+    z-index: 10; /* Добавляем z-index, чтобы кнопка была поверх других элементов */
 }
 
 .back-arrow-btn:hover {

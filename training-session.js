@@ -19,6 +19,9 @@ const playersQueue = document.getElementById('players-queue');
 const backToMainBtn = document.getElementById('back-to-main');
 const gameRegulationSelect = document.getElementById('game-regulation');
 
+// Проверка, что элементы найдены
+console.log('backToMainBtn:', backToMainBtn);
+
 // Функция для создания аватара с инициалами
 function createInitialsAvatar(firstName, lastName) {
     const canvas = document.createElement('canvas');
@@ -765,13 +768,26 @@ function saveTrainingState() {
 }
 
 // Обработчик для кнопки возврата к списку тренировок
-backToMainBtn.addEventListener('click', function() {
+if (backToMainBtn) {
+    console.log('Добавляем обработчик для кнопки возврата');
+
+    // Удаляем все существующие обработчики
+    backToMainBtn.removeEventListener('click', backToMainHandler);
+
+    // Добавляем новый обработчик
+    backToMainBtn.addEventListener('click', backToMainHandler);
+}
+
+// Функция-обработчик для кнопки возврата
+function backToMainHandler() {
+    console.log('Кнопка возврата нажата');
+
     // Сохраняем состояние тренировки перед выходом
     saveTrainingState();
 
     // Перенаправляем на главную страницу с параметром для открытия вкладки тренировок
     window.location.href = 'index.html?tab=trainings';
-});
+}
 
 // Обработчик изменения регламента
 gameRegulationSelect.addEventListener('change', function() {
@@ -785,6 +801,19 @@ gameRegulationSelect.addEventListener('change', function() {
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     initTrainingSession();
+
+    // Добавляем обработчик для кнопки возврата еще раз после загрузки DOM
+    const backBtn = document.getElementById('back-to-main');
+    if (backBtn) {
+        console.log('Добавляем обработчик для кнопки возврата после загрузки DOM');
+        backBtn.addEventListener('click', function() {
+            console.log('Кнопка возврата нажата (DOM loaded)');
+            saveTrainingState();
+            window.location.href = 'index.html?tab=trainings';
+        });
+    } else {
+        console.error('Кнопка возврата не найдена после загрузки DOM');
+    }
 });
 
 // Сохраняем состояние тренировки и останавливаем таймеры при закрытии страницы или перезагрузке
