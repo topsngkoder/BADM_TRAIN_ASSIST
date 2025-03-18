@@ -226,8 +226,8 @@ function renderTrainings() {
             <div class="training-header">
                 <div class="training-date-time">${formattedDate}, ${formattedTime}</div>
                 <div class="training-actions">
-                    <button class="btn edit-btn" data-index="${index}">Редактировать</button>
-                    <button class="btn delete-btn" data-index="${index}">Удалить</button>
+                    <button class="btn icon-btn edit-btn" data-index="${index}" title="Редактировать">✏️</button>
+                    <button class="btn icon-btn delete-btn" data-index="${index}" title="Удалить">🗑️</button>
                 </div>
             </div>
             <div class="training-info">
@@ -239,7 +239,7 @@ function renderTrainings() {
                         <strong>Количество кортов:</strong> ${training.courts}
                     </div>
                 </div>
-                <button class="btn start-training-btn" data-index="${index}">Начать тренировку</button>
+                <button class="btn start-training-btn" data-index="${index}">Войти</button>
             </div>
             <div class="training-players-title">Участники:</div>
             <div class="training-players">

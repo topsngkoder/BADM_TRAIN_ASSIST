@@ -114,6 +114,16 @@ h1, h2 {
     background-color: #e68a00;
 }
 
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 5px;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .sort-btn {
     background-color: #607D8B;
     color: white;
