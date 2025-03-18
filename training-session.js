@@ -10,6 +10,7 @@ const trainingId = parseInt(urlParams.get('id'));
 let currentTraining = null;
 let courtsData = [];
 let queuePlayers = [];
+let activeGames = {}; // Хранит информацию об активных играх на кортах
 
 // DOM элементы
 const trainingInfoElement = document.getElementById('training-info');
@@ -50,6 +51,14 @@ function createDefaultAvatar() {
 
 const defaultAvatarDataURL = createDefaultAvatar();
 
+// Функция для форматирования времени в формат MM:SS
+function formatTime(milliseconds) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
 // Инициализация тренировки
 function initTrainingSession() {
     if (trainingId === null || isNaN(trainingId) || trainingId < 0 || trainingId >= trainings.length) {
@@ -69,6 +78,34 @@ function initTrainingSession() {
     // Инициализируем очередь игроков
     initQueue();
     
+    // Восстанавливаем активные игры, если они есть
+    if (currentTraining.activeGames) {
+        for (const courtId in currentTraining.activeGames) {
+            const gameData = currentTraining.activeGames[courtId];
+
+            // Создаем активную игру
+            activeGames[courtId] = {
+                startTime: gameData.startTime,
+                elapsedTime: gameData.elapsedTime,
+                timerId: null
+            };
+
+            // Запускаем таймер
+            activeGames[courtId].timerId = setInterval(() => {
+                activeGames[courtId].elapsedTime = Date.now() - activeGames[courtId].startTime;
+
+                // Обновляем отображение таймера
+                const timerElement = document.getElementById(`timer-${courtId}`);
+                if (timerElement) {
+                    timerElement.textContent = formatTime(activeGames[courtId].elapsedTime);
+                }
+
+                // Сохраняем состояние тренировки
+                saveTrainingState();
+            }, 1000);
+        }
+    }
+
     // Отображаем корты и очередь
     renderCourts();
     renderQueue();
@@ -225,7 +262,11 @@ function renderCourts() {
                 </div>
             </div>
             <div class="court-actions">
-                <button class="btn start-game-btn" data-court="${court.id}">Начать</button>
+                ${activeGames[court.id] ?
+                    `<div class="game-timer" id="timer-${court.id}">${formatTime(activeGames[court.id].elapsedTime)}</div>
+                    <button class="btn finish-game-btn" data-court="${court.id}">Игра завершена</button>` :
+                    `<button class="btn start-game-btn" data-court="${court.id}">Начать</button>`
+                }
             </div>
         `;
         
@@ -253,6 +294,13 @@ function renderCourts() {
         btn.addEventListener('click', function() {
             const courtId = parseInt(this.getAttribute('data-court'));
             startGame(courtId);
+        });
+    });
+
+    document.querySelectorAll('.finish-game-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const courtId = parseInt(this.getAttribute('data-court'));
+            finishGame(courtId);
         });
     });
 
@@ -469,14 +517,76 @@ function removePlayerFromCourt(courtId, side, playerIndex) {
 
 // Начало игры на корте
 function startGame(courtId) {
-    alert('Функционал начала игры будет добавлен в следующей версии');
+    // Проверяем, что на корте достаточно игроков
+    const court = courtsData.find(c => c.id === courtId);
+    if (!court) return;
+
+    if (court.side1.length === 0 || court.side2.length === 0) {
+        alert('Для начала игры должен быть хотя бы один игрок на каждой стороне корта');
+        return;
+    }
+
+    // Создаем новую активную игру
+    activeGames[courtId] = {
+        startTime: Date.now(),
+        elapsedTime: 0,
+        timerId: null
+    };
+
+    // Запускаем таймер
+    activeGames[courtId].timerId = setInterval(() => {
+        activeGames[courtId].elapsedTime = Date.now() - activeGames[courtId].startTime;
+
+        // Обновляем отображение таймера
+        const timerElement = document.getElementById(`timer-${courtId}`);
+        if (timerElement) {
+            timerElement.textContent = formatTime(activeGames[courtId].elapsedTime);
+        }
+
+        // Сохраняем состояние тренировки
+        saveTrainingState();
+    }, 1000);
+
+    // Обновляем отображение
+    renderCourts();
+
+    // Сохраняем состояние тренировки
+    saveTrainingState();
+}
+
+// Завершение игры на корте
+function finishGame(courtId) {
+    // Проверяем, что игра активна
+    if (!activeGames[courtId]) return;
+
+    // Останавливаем таймер
+    clearInterval(activeGames[courtId].timerId);
+
+    // Удаляем активную игру
+    delete activeGames[courtId];
+
+    // Обновляем отображение
+    renderCourts();
+
+    // Сохраняем состояние тренировки
+    saveTrainingState();
 }
 
 // Функция для сохранения состояния тренировки
 function saveTrainingState() {
-    // Сохраняем текущее состояние кортов и очереди в объект тренировки
+    // Подготовим данные об активных играх для сохранения (без таймеров)
+    const activeGamesData = {};
+    for (const courtId in activeGames) {
+        activeGamesData[courtId] = {
+            startTime: activeGames[courtId].startTime,
+            elapsedTime: activeGames[courtId].elapsedTime
+        };
+    }
+
+    // Сохраняем текущее состояние кортов, очереди и активных игр в объект тренировки
     currentTraining.courtsData = courtsData;
     currentTraining.queuePlayers = queuePlayers;
+    currentTraining.activeGames = activeGamesData;
 
     // Обновляем тренировку в массиве тренировок
     trainings[trainingId] = currentTraining;
@@ -499,7 +609,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initTrainingSession();
 });
 
-// Сохраняем состояние тренировки при закрытии страницы или перезагрузке
+// Сохраняем состояние тренировки и останавливаем таймеры при закрытии страницы или перезагрузке
 window.addEventListener('beforeunload', function() {
+    // Останавливаем все таймеры
+    for (const courtId in activeGames) {
+        if (activeGames[courtId].timerId) {
+            clearInterval(activeGames[courtId].timerId);
+        }
+    }
+
     saveTrainingState();
 });
