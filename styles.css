@@ -469,3 +469,22 @@ input[type="number"] {
     display: inline-block;
     vertical-align: middle;
 }
+
+.court-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.second-game-indicator {
+    background-color: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 10px;
+    display: inline-flex;
+    align-items: center;
+}
