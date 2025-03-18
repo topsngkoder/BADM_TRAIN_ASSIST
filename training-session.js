@@ -210,6 +210,11 @@ function initCourts() {
             if (!court.gamesPlayed) {
                 court.gamesPlayed = {};
             }
+
+            // Если свойство consecutiveWins не определено, устанавливаем его в 0
+            if (court.consecutiveWins === undefined) {
+                court.consecutiveWins = 0;
+            }
         });
     } else {
         // Иначе создаем новые корты
@@ -222,7 +227,8 @@ function initCourts() {
                 side1: [],
                 side2: [],
                 winnerStayed: false,
-                gamesPlayed: {}
+                gamesPlayed: {},
+                consecutiveWins: 0
             });
         }
     }
@@ -296,14 +302,18 @@ function renderCourts() {
             });
         }
         
-        // Проверяем, играет ли пара вторую игру
-        const secondGameIndicator = court.winnerStayed ?
-            '<div class="second-game-indicator">2-я игра</div>' : '';
+        // Проверяем, играет ли пара вторую игру или показывает количество побед
+        let gameIndicator = '';
+        if (currentTraining.gameRegulation === 'winner_stays_always' && court.consecutiveWins > 0) {
+            gameIndicator = `<div class="consecutive-wins-indicator">${court.consecutiveWins} победа подряд</div>`;
+        } else if (currentTraining.gameRegulation === 'two_games_out' && court.winnerStayed) {
+            gameIndicator = '<div class="second-game-indicator">2-я игра</div>';
+        }
 
         courtCard.innerHTML = `
             <div class="court-header">
                 <div class="court-title">${court.name}</div>
-                ${secondGameIndicator}
+                ${gameIndicator}
             </div>
             <div class="court-sides">
                 <div class="court-side side1">
@@ -743,11 +753,11 @@ function showWinnerSelectionDialog(courtId) {
             const courtId = parseInt(this.getAttribute('data-court'));
             const winningSide = parseInt(this.getAttribute('data-winner'));
 
-            // Завершаем игру с выбранным победителем
-            completeGameWithWinner(courtId, winningSide);
-
-            // Закрываем модальное окно
+            // Сначала закрываем модальное окно
             document.body.removeChild(modal);
+
+            // Затем завершаем игру с выбранным победителем
+            completeGameWithWinner(courtId, winningSide);
         });
     });
 
@@ -854,19 +864,29 @@ function applyRegulationRules(court, winningSide = 1) {
 
         case 'winner_stays_always':
             // Победитель остается всегда
-            // Добавляем только проигравших в очередь
+            // Проверяем, что есть победители
+            if (winners.length === 0) {
+                console.error('Нет победителей для режима winner_stays_always');
+                return;
+            }
+
+            // Добавляем проигравших в конец очереди
             losers.forEach(player => {
                 queuePlayers.push(player);
             });
+
             // Очищаем сторону проигравших
             if (winningSide === 1) {
+                // Если победители на стороне 1, просто очищаем сторону 2
                 court.side2 = [];
             } else {
-                court.side1 = [];
-                // Перемещаем победителей на сторону 1
-                court.side1 = winners;
+                // Если победители на стороне 2, перемещаем их на сторону 1
+                court.side1 = [...winners]; // Создаем копию массива победителей
                 court.side2 = [];
             }
+
+            // Устанавливаем флаг, что победители остались на корте
+            court.winnerStayed = true;
             break;
 
         case 'winner_stays_once':
