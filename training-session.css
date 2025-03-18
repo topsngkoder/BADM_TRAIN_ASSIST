@@ -2,8 +2,9 @@
 
 .training-info-panel {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    position: relative;
     margin-bottom: 20px;
     background-color: white;
     padding: 15px;
@@ -15,14 +16,32 @@
     flex: 1;
 }
 
+.back-arrow-btn {
+    position: absolute;
+    left: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #2196F3;
+    padding: 5px 10px;
+    transition: transform 0.2s;
+}
+
+.back-arrow-btn:hover {
+    transform: scale(1.2);
+}
+
 .training-info p {
     margin: 5px 0;
 }
 
 .training-info-text {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 500;
     color: #333;
+    text-align: center;
+    width: 100%;
 }
 
 .courts-container {
@@ -365,9 +384,9 @@
         align-items: flex-start;
     }
 
-    .training-info-panel button {
-        margin-top: 10px;
-        align-self: flex-end;
+    .training-info-panel .back-arrow-btn {
+        margin-top: 0;
+        align-self: center;
     }
 
     .player-selection-modal-content {
