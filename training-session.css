@@ -1,12 +1,15 @@
 /* Стили для страницы проведения тренировки */
+h1 {
+    margin-bottom: 5px;
+}
 
 .training-info-panel {
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    margin-bottom: 20px;
-    padding: 15px 0;
+    margin-bottom: 5px;
+    padding: 0;
 }
 
 .training-info {
@@ -15,19 +18,21 @@
 
 .back-arrow-btn {
     position: absolute;
-    left: 15px;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
-    font-size: 36px;
+    font-size: 30px;
     font-weight: bold;
     cursor: pointer;
     color: #2196F3;
-    padding: 5px 10px;
+    padding: 5px;
     transition: transform 0.2s;
 }
 
 .back-arrow-btn:hover {
-    transform: scale(1.2);
+    transform: translateY(-50%) scale(1.2);
 }
 
 .training-info p {
@@ -35,36 +40,35 @@
 }
 
 .training-info-text {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 500;
     color: #333;
     text-align: center;
     width: 100%;
-    margin-top: 0;
-    margin-bottom: 10px;
+    margin: 0;
 }
 
 .regulation-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .game-regulation-select {
-    padding: 8px 15px;
+    padding: 4px 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: #f9f9f9;
-    font-size: 16px;
+    font-size: 14px;
     color: #333;
     cursor: pointer;
-    min-width: 250px;
+    min-width: 220px;
     text-align: center;
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 16px;
+    background-position: right 8px center;
+    background-size: 12px;
 }
 
 .game-regulation-select:focus {
@@ -424,12 +428,17 @@
     }
 
     .training-info-panel {
-        padding-top: 30px;
+        padding-top: 25px;
     }
 
     .back-arrow-btn {
-        top: 0;
+        top: 10px;
         left: 0;
+        transform: none;
+    }
+
+    .back-arrow-btn:hover {
+        transform: scale(1.2);
     }
 
     .player-selection-modal-content {
