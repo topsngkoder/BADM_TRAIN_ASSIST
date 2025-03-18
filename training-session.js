@@ -206,15 +206,9 @@ function initCourts() {
                 court.winnerStayed = false;
             }
 
-            // Если свойство previousWinnersSide не определено, но winnerStayed = true,
-            // устанавливаем его в 1 (по умолчанию)
-            if (court.previousWinnersSide === undefined && court.winnerStayed) {
-                court.previousWinnersSide = 1;
-            }
-
-            // Если свойство winnerChanges не определено, устанавливаем его в 0
-            if (court.winnerChanges === undefined) {
-                court.winnerChanges = 0;
+            // Если свойство gamesPlayed не определено, инициализируем его пустым объектом
+            if (!court.gamesPlayed) {
+                court.gamesPlayed = {};
             }
         });
     } else {
@@ -228,8 +222,7 @@ function initCourts() {
                 side1: [],
                 side2: [],
                 winnerStayed: false,
-                previousWinnersSide: null,
-                winnerChanges: 0
+                gamesPlayed: {}
             });
         }
     }
@@ -802,75 +795,55 @@ function applyRegulationRules(court, winningSide = 1) {
     switch (regulation) {
         case 'two_games_out':
             // Победитель играет две игры
-            if (court.winnerStayed) {
-                // Это вторая игра для пары, которая выиграла первую игру
 
-                // Проверяем, выиграла ли та же пара, что и в первой игре
-                // Для этого смотрим, на какой стороне находятся игроки, которые остались с прошлой игры
-                const previousWinnersSide = court.previousWinnersSide || 1;
+            // Проверяем, есть ли у корта свойство gamesPlayed
+            if (!court.gamesPlayed) {
+                court.gamesPlayed = {};
+            }
 
-                if (winningSide === previousWinnersSide) {
-                    // Если победили те же игроки, что и в первой игре (выиграли обе игры)
-                    // Сначала добавляем победителей в конец очереди
-                    winners.forEach(player => {
-                        queuePlayers.push(player);
-                    });
-                    // Затем добавляем проигравших в конец очереди
-                    losers.forEach(player => {
-                        queuePlayers.push(player);
-                    });
-                    // Очищаем корт
-                    court.side1 = [];
-                    court.side2 = [];
-                    // Сбрасываем флаги
-                    court.winnerStayed = false;
-                    court.previousWinnersSide = null;
-                    // Сбрасываем счетчик смен победителей
-                    court.winnerChanges = 0;
-                } else {
-                    // Если победили новые игроки (предыдущие победители проиграли)
+            // Создаем уникальный идентификатор для пары победителей
+            // (объединяем ID игроков в строку)
+            const winnersKey = winners.map(p => p.id).sort().join('-');
 
-                    // Добавляем проигравших (предыдущих победителей) в конец очереди
-                    losers.forEach(player => {
-                        queuePlayers.push(player);
-                    });
+            // Проверяем, сколько игр сыграла эта пара победителей
+            const gamesPlayed = court.gamesPlayed[winnersKey] || 0;
 
-                    // Очищаем сторону проигравших и перемещаем новых победителей на сторону 1
-                    if (winningSide === 1) {
-                        court.side2 = [];
-                    } else {
-                        court.side1 = winners;
-                        court.side2 = [];
-                    }
+            // Добавляем проигравших в конец очереди
+            losers.forEach(player => {
+                queuePlayers.push(player);
+            });
 
-                    // Устанавливаем флаг, что новые победители остаются для своей второй игры
-                    court.winnerStayed = true;
-                    // Запоминаем, на какой стороне находятся новые победители
-                    court.previousWinnersSide = winningSide;
-                    // Сбрасываем счетчик смен победителей, так как это новая пара
-                    court.winnerChanges = 0;
-                }
-            } else {
-                // Это первая игра для обеих пар
-                // Добавляем проигравших в конец очереди
-                losers.forEach(player => {
+            if (gamesPlayed >= 1) {
+                // Если эта пара победителей уже сыграла хотя бы одну игру,
+                // значит это их вторая победа, и они должны уйти в конец очереди
+                winners.forEach(player => {
                     queuePlayers.push(player);
                 });
 
-                // Очищаем сторону проигравших и перемещаем победителей на сторону 1
+                // Очищаем корт
+                court.side1 = [];
+                court.side2 = [];
+
+                // Сбрасываем флаг
+                court.winnerStayed = false;
+
+                // Удаляем запись об этой паре из gamesPlayed
+                delete court.gamesPlayed[winnersKey];
+            } else {
+                // Если это первая победа для этой пары, они остаются на корте
+
+                // Увеличиваем счетчик игр для этой пары
+                court.gamesPlayed[winnersKey] = gamesPlayed + 1;
+
+                // Оставляем победителей на их стороне
                 if (winningSide === 1) {
                     court.side2 = [];
                 } else {
-                    court.side1 = winners;
-                    court.side2 = [];
+                    court.side1 = [];
                 }
 
                 // Устанавливаем флаг, что победитель остался
                 court.winnerStayed = true;
-                // Запоминаем, на какой стороне находятся победители
-                court.previousWinnersSide = winningSide;
-                // Сбрасываем счетчик смен победителей
-                court.winnerChanges = 0;
             }
             break;
 
