@@ -6,10 +6,7 @@
     align-items: center;
     position: relative;
     margin-bottom: 20px;
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px 0;
 }
 
 .training-info {
@@ -21,7 +18,8 @@
     left: 15px;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 36px;
+    font-weight: bold;
     cursor: pointer;
     color: #2196F3;
     padding: 5px 10px;
@@ -42,6 +40,8 @@
     color: #333;
     text-align: center;
     width: 100%;
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
 .courts-container {
@@ -380,13 +380,12 @@
     }
 
     .training-info-panel {
-        flex-direction: column;
-        align-items: flex-start;
+        padding-top: 30px;
     }
 
-    .training-info-panel .back-arrow-btn {
-        margin-top: 0;
-        align-self: center;
+    .back-arrow-btn {
+        top: 0;
+        left: 0;
     }
 
     .player-selection-modal-content {
