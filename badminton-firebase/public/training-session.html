@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проведение тренировки - Бадминтон</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="training-session.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Проведение тренировки</h1>
+        <div class="training-info-panel">
+            <button id="back-to-main" class="back-arrow-btn" onclick="window.location.href='index.html?tab=trainings'">←</button>
+            <div id="training-info" class="training-info">
+                <!-- Здесь будет информация о тренировке -->
+            </div>
+        </div>
+
+        <div class="regulation-container">
+            <select id="game-regulation" class="game-regulation-select">
+                <option value="two_games_out">Победитель играет две игры</option>
+                <option value="winner_stays_always">Победитель остаётся всегда</option>
+                <option value="one_game">Играем один раз</option>
+            </select>
+        </div>
+        
+        <div id="courts-container" class="courts-container">
+            <!-- Здесь будут отображаться корты -->
+        </div>
+        
+        <div class="queue-section">
+            <h2>Игроки в очереди</h2>
+            <div id="players-queue" class="players-queue">
+                <!-- Здесь будут отображаться игроки в очереди -->
+            </div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="training-session.js"></script>
+
+    <script>
+        // Проверка аутентификации
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем, авторизован ли пользователь
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (!user) {
+                    // Если пользователь не авторизован, перенаправляем на главную страницу
+                    window.location.href = 'index.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Бадминтон Тренировки</title>
+    <link rel="stylesheet" href="styles.css?v=1.0.1">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <!-- Экран входа -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <h1>Бадминтон Тренировки</h1>
+            <p>Войдите, чтобы получить доступ к приложению</p>
+            <button id="google-signin-btn" class="btn google-signin-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+                Войти с помощью Google
+            </button>
+        </div>
+    </div>
+
+    <!-- Основное содержимое приложения -->
+    <div id="app-content" class="container" style="display: none;">
+        <div class="app-header">
+            <h1>Бадминтон Тренировки</h1>
+            <div class="user-info">
+                <span id="user-name"></span>
+                <button id="sign-out-btn" class="btn sign-out-btn">Выйти</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="players">Игроки</button>
+            <button class="tab-btn" data-tab="trainings">Тренировки</button>
+        </div>
+
+        <div id="players-tab" class="tab-content active">
+            <div class="players-section">
+                <h2>Список игроков</h2>
+                <div class="action-buttons">
+                    <button id="add-player-firebase-btn" class="btn primary-btn">Добавить игрока</button>
+                </div>
+
+                <div class="sort-controls">
+                    <label>Сортировка:</label>
+                    <button id="sort-name-btn" class="btn sort-btn">По имени</button>
+                    <button id="sort-rating-btn" class="btn sort-btn">По рейтингу</button>
+                </div>
+
+                <div id="players-list" class="players-list">
+                    <!-- Здесь будут отображаться игроки -->
+                </div>
+            </div>
+        </div>
+
+        <div id="trainings-tab" class="tab-content">
+            <div class="trainings-section">
+                <h2>Список тренировок</h2>
+                <div class="action-buttons">
+                    <button id="add-training-btn" class="btn primary-btn">Создать тренировку</button>
+                </div>
+
+                <div id="trainings-list" class="trainings-list">
+                    <!-- Здесь будут отображаться тренировки -->
+                </div>
+            </div>
+        </div>
+
+
+        
+        <!-- Модальное окно для редактирования игрока -->
+        <div id="player-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 id="modal-title">Редактировать игрока</h2>
+                <form id="player-form">
+                    <input type="hidden" id="player-index" value="">
+                    <div class="form-group">
+                        <label for="first-name">Имя:</label>
+                        <input type="text" id="first-name" name="first-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name">Фамилия:</label>
+                        <input type="text" id="last-name" name="last-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rating">Рейтинг:</label>
+                        <input type="number" id="rating" name="rating" min="0" max="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="photo">Фото:</label>
+                        <input type="file" id="photo" name="photo" accept="image/*">
+                        <div id="current-photo-container" class="current-photo-container" style="display: none;">
+                            <p>Текущее фото:</p>
+                            <img id="current-photo" class="current-photo" src="" alt="Текущее фото">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Сохранить</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно для создания тренировки -->
+        <div id="training-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 id="training-modal-title">Создать тренировку</h2>
+                <form id="training-form">
+                    <input type="hidden" id="training-index" value="">
+                    <div class="form-group">
+                        <label for="training-location">Место проведения:</label>
+                        <input type="text" id="training-location" name="training-location" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="training-date">Дата проведения:</label>
+                        <input type="date" id="training-date" name="training-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="training-time">Время проведения:</label>
+                        <input type="time" id="training-time" name="training-time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="training-courts">Количество кортов:</label>
+                        <input type="number" id="training-courts" name="training-courts" min="1" max="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Участники тренировки:</label>
+                        <div class="training-players-header">
+                            <button type="button" id="add-player-to-training-btn" class="btn secondary-btn">Создать нового игрока</button>
+                        </div>
+                        <div id="training-players-selection" class="training-players-selection">
+                            <!-- Здесь будут отображаться игроки для выбора -->
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Сохранить</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно для добавления игрока -->
+        <div id="player-firebase-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Добавить игрока</h2>
+                <form id="player-firebase-form">
+                    <div class="form-group">
+                        <label for="firebase-first-name">Имя:</label>
+                        <input type="text" id="firebase-first-name" name="firebase-first-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firebase-last-name">Фамилия:</label>
+                        <input type="text" id="firebase-last-name" name="firebase-last-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firebase-rating">Рейтинг:</label>
+                        <input type="number" id="firebase-rating" name="firebase-rating" min="0" max="1000" required>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Сохранить</button>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="firebase-config.js?v=1.0.1"></script>
+    <script src="app.js?v=1.0.1"></script>
+
+    <script>
+        // Функция для принудительного обновления кэша
+        function forceRefresh() {
+            // Версия приложения - увеличивайте при каждом деплое
+            const appVersion = '1.0.1';
+
+            // Проверяем, изменилась ли версия
+            const lastVersion = localStorage.getItem('appVersion');
+            if (lastVersion !== appVersion) {
+                console.log('Обнаружена новая версия приложения. Очищаем кэш...');
+
+                // Сохраняем новую версию
+                localStorage.setItem('appVersion', appVersion);
+
+                // Если это не первый запуск, перезагружаем страницу с очисткой кэша
+                if (lastVersion) {
+                    window.location.reload(true);
+                }
+            }
+        }
+
+        // Регистрация Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js?v=1.0.1')
+                    .then(registration => {
+                        console.log('Service Worker зарегистрирован:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка регистрации Service Worker:', error);
+                    });
+            });
+        }
+
+        // Инициализация обработчиков для входа и выхода
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем версию и обновляем кэш при необходимости
+            forceRefresh();
+
+            // Кнопка входа через Google
+            const googleSignInBtn = document.getElementById('google-signin-btn');
+            if (googleSignInBtn) {
+                googleSignInBtn.addEventListener('click', signInWithGoogle);
+            }
+
+            // Кнопка выхода
+            const signOutBtn = document.getElementById('sign-out-btn');
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', signOut);
+            }
+        });
+    </script>
+</body>
+</html>

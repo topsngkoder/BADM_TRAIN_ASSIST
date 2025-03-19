@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Игроки доступны всем авторизованным пользователям
+    match /players/{playerId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Общий список игроков доступен всем авторизованным пользователям
+    match /allPlayers/{playerId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Тренировки доступны только их создателям
+    match /trainings/{trainingId} {
+      allow read, write: if request.auth != null &&
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+  }
+}
