@@ -133,9 +133,13 @@ function initTrainingSession() {
 
     // Устанавливаем значение регламента из сохраненных данных или по умолчанию
     if (currentTraining.gameRegulation) {
+        // Если был выбран режим "Победитель остаётся один раз", заменяем его на "Победитель играет две игры"
+        if (currentTraining.gameRegulation === 'winner_stays_once') {
+            currentTraining.gameRegulation = 'two_games_out';
+        }
         gameRegulationSelect.value = currentTraining.gameRegulation;
     } else {
-        // По умолчанию "Два раза и вышел"
+        // По умолчанию "Победитель играет две игры"
         currentTraining.gameRegulation = 'two_games_out';
         gameRegulationSelect.value = 'two_games_out';
     }
@@ -885,43 +889,11 @@ function applyRegulationRules(court, winningSide = 1) {
                 court.side2 = [];
             }
 
+            // Увеличиваем счетчик побед
+            court.consecutiveWins++;
+
             // Устанавливаем флаг, что победители остались на корте
             court.winnerStayed = true;
-            break;
-
-        case 'winner_stays_once':
-            // Победитель остается один раз
-            // Если у корта есть свойство winnerStayed и оно true,
-            // значит победитель уже оставался один раз
-            if (court.winnerStayed) {
-                // Сначала добавляем победителей в конец очереди
-                winners.forEach(player => {
-                    queuePlayers.push(player);
-                });
-                // Затем добавляем проигравших в конец очереди
-                losers.forEach(player => {
-                    queuePlayers.push(player);
-                });
-                // Очищаем корт
-                court.side1 = [];
-                court.side2 = [];
-                // Сбрасываем флаг
-                court.winnerStayed = false;
-            } else {
-                // Добавляем только проигравших в очередь
-                losers.forEach(player => {
-                    queuePlayers.push(player);
-                });
-                // Очищаем сторону проигравших и перемещаем победителей на сторону 1
-                if (winningSide === 1) {
-                    court.side2 = [];
-                } else {
-                    court.side1 = winners;
-                    court.side2 = [];
-                }
-                // Устанавливаем флаг, что победитель остался
-                court.winnerStayed = true;
-            }
             break;
 
         case 'one_game':
